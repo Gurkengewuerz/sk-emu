@@ -1,83 +1,149 @@
 package de.hsbochum.gui;
 
+import de.hsbochum.Main;
+import de.hsbochum.business.Messreihe;
 import de.hsbochum.business.Messung;
 import de.hsbochum.business.db.DbModel;
 import de.hsbochum.business.emu.EmuCheckConnection;
 import de.hsbochum.business.emu.MESSWERT;
-import javafx.stage.Stage;
+import javafx.collections.ObservableList;
+import javafx.fxml.FXML;
+import javafx.scene.control.Button;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import net.sf.yad2xx.FTDIException;
 
 import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class BasisControl {
+    private static Logger logger = Logger.getLogger(BasisControl.class.getName());
 
-    private DbModel dbModel;
-    private BasisView basisView;
+    private final DbModel dbModel;
+    @FXML
+    private TextField txtMessreihenId;
+    @FXML
+    private TextField txtZeitintervall;
+    @FXML
+    private TextField txtVerbraucher;
+    @FXML
+    private TextField txtMessgroesse;
+    @FXML
+    private Button btnMessungErstellen;
+    @FXML
+    private TableView<Messreihe> tableView;
+    @FXML
+    private TableColumn<Messreihe, Integer> clmIdentnummer;
+    @FXML
+    private TableColumn<Messreihe, Integer> clmZeitIntervall;
+    @FXML
+    private TableColumn<Messreihe, String> clmVerbraucher;
+    @FXML
+    private TableColumn<Messreihe, String> clmMessgroesse;
+    @FXML
+    private TableColumn<Messreihe, String> clmMessungen;
+    private ObservableList<Messreihe> messreihen;
 
-    public BasisControl(Stage primaryStage) {
-        this.dbModel = DbModel.getInstance();
-        this.basisView = new BasisView(this, primaryStage, this.dbModel);
-        primaryStage.show();
+
+    public BasisControl() {
+        dbModel = DbModel.getInstance();
     }
 
-    public Messung[] leseMessungenAusDb(String messreihenId) {
-        Messung[] ergebnis = null;
-        int idMessreihe = -1;
+
+    @FXML
+    public void speichereMessreiheInDB() {
+        int identNummerMessreihe = Integer.parseInt(this.txtMessreihenId.getText());
+        int zeitIntervallSekunden = Integer.parseInt(this.txtZeitintervall.getText());
+        String verbraucher = this.txtVerbraucher.getText();
+        String messgroesse = this.txtMessgroesse.getText();
+        Messreihe messreihe = new Messreihe(identNummerMessreihe, zeitIntervallSekunden, verbraucher, messgroesse);
         try {
-            idMessreihe = Integer.parseInt(messreihenId);
-        } catch (NumberFormatException nfExc) {
-            basisView.zeigeFehlermeldungAn("Das Format der eingegebenen MessreihenId ist nicht korrekt.");
-        }
-        try {
-            ergebnis = this.dbModel.leseMessungenAusDb(idMessreihe);
+            this.dbModel.speichereMessreiheInDb(messreihe);
         } catch (ClassNotFoundException cnfExc) {
-            basisView.zeigeFehlermeldungAn("Fehler bei der Verbindungerstellung zur Datenbank.");
-            cnfExc.printStackTrace();
+            logger.log(Level.SEVERE, cnfExc.getMessage(), cnfExc);
+            Main.zeigeFehlermeldungAn("Fehler bei der Verbindungerstellung zur Datenbank.");
+            return;
         } catch (SQLException sqlExc) {
-            basisView.zeigeFehlermeldungAn("Fehler beim Zugriff auf die Datenbank.");
-            sqlExc.printStackTrace();
+            logger.log(Level.SEVERE, sqlExc.getMessage(), sqlExc);
+            Main.zeigeFehlermeldungAn("Fehler beim Zugriff auf die Datenbank.");
+            return;
         }
-        return ergebnis;
+        this.leseMessreihenInklusiveMessungenAusDb();
+
+        // Zurücksetzen der Textfelder
+        this.txtMessreihenId.setText("");
+        this.txtZeitintervall.setText("");
+        this.txtVerbraucher.setText("");
+        this.txtMessgroesse.setText("");
     }
 
-    private void speichereMessungInDb(int messreihenId, Messung messung) {
+    @FXML
+    public void leseMessreihenInklusiveMessungenAusDb() {
+        logger.log(Level.INFO, "leseMessreihenInklusiveMessungenAusDb");
         try {
-            this.dbModel.speichereMessungInDb(messreihenId, messung);
+            this.dbModel.leseMessreihenInklusiveMessungenAusDb();
+            this.messreihen = this.dbModel.getMessreihen();
+            this.tableView.getItems().setAll(this.messreihen);
         } catch (ClassNotFoundException cnfExc) {
-            basisView.zeigeFehlermeldungAn("Fehler bei der Verbindungerstellung zur Datenbank.");
+            logger.log(Level.SEVERE, cnfExc.getMessage(), cnfExc);
+            Main.zeigeFehlermeldungAn("Fehler bei der Verbindungerstellung zur Datenbank.");
         } catch (SQLException sqlExc) {
-            basisView.zeigeFehlermeldungAn("Fehler beim Zugriff auf die Datenbank.");
+            logger.log(Level.SEVERE, sqlExc.getMessage(), sqlExc);
+            Main.zeigeFehlermeldungAn("Fehler beim Zugriff auf die Datenbank.");
         }
     }
 
-    public Messung holeMessungVonEMU(String messreihenId, String laufendeNummer) {
+    @FXML
+    public void holeMessungVonEMU() {
+        logger.log(Level.INFO, "holeMessungVonEMU");
+
+        Messreihe messreihe = this.tableView.getSelectionModel().getSelectedItem();
+        if (messreihe == null) {
+            Main.zeigeFehlermeldungAn("Keine Messreihe ausgewählt!");
+            return;
+        }
+        try {
+            int anzahl = this.dbModel.anzahlMessungenZuMessreihe(messreihe.getMessreihenId());
+            this.holeMessungVonEMU(messreihe.getMessreihenId(), anzahl);
+        } catch (ClassNotFoundException cnfExc) {
+            logger.log(Level.SEVERE, cnfExc.getMessage(), cnfExc);
+            Main.zeigeFehlermeldungAn("Fehler bei der Verbindungerstellung zur Datenbank.");
+        } catch (SQLException sqlExc) {
+            logger.log(Level.SEVERE, sqlExc.getMessage(), sqlExc);
+            Main.zeigeFehlermeldungAn("Fehler beim Zugriff auf die Datenbank.");
+        }
+        this.leseMessreihenInklusiveMessungenAusDb();
+    }
+
+    public Messung holeMessungVonEMU(int messreihenId, int laufendeNummer) throws SQLException, ClassNotFoundException {
         Messung ergebnis = null;
-        int messId;
-        messId = Integer.parseInt(messreihenId);
-        int lfdNr = Integer.parseInt(laufendeNummer);
 
         EmuCheckConnection ecc = null;
         try {
             ecc = new EmuCheckConnection();
             if (!ecc.isConnected()) {
-                basisView.zeigeFehlermeldungAn("Fehler beim Verbinden auf EMU.");
+                Main.zeigeFehlermeldungAn("Fehler beim Verbinden auf EMU.");
             } else {
-                System.out.println("ECC Connect...");
+                logger.log(Level.INFO, "ECC Connect...");
                 ecc.connect();
                 Thread.sleep(1000);
-                System.out.println("Programming Mode...");
+                logger.log(Level.INFO, "Programming Mode...");
                 ecc.sendProgrammingMode();
                 Thread.sleep(1000);
-                System.out.println("Request...");
+                logger.log(Level.INFO, "Request...");
                 ecc.sendRequest(MESSWERT.Leistung);
                 Thread.sleep(1000);
-                System.out.println("Ausgabe...");
-                ergebnis = new Messung(lfdNr, ecc.gibErgebnisAus(), System.currentTimeMillis());
+                logger.log(Level.INFO, "Ausgabe...");
+                ergebnis = new Messung(laufendeNummer, ecc.gibErgebnisAus(), System.currentTimeMillis());
             }
-        } catch (FTDIException ex) {
-            basisView.zeigeFehlermeldungAn("Fehler beim Zugriff auf EMU.");
+        } catch (FTDIException e) {
+            logger.log(Level.SEVERE, e.getMessage(), e);
+            Main.zeigeFehlermeldungAn("Fehler beim Zugriff auf EMU.");
         } catch (InterruptedException e) {
-            basisView.zeigeFehlermeldungAn("Thread Fehler.");
+            logger.log(Level.SEVERE, e.getMessage(), e);
+            Main.zeigeFehlermeldungAn("Thread Fehler.");
         } finally {
             if (ecc != null) {
                 try {
@@ -87,7 +153,7 @@ public class BasisControl {
             }
         }
 
-        if (ergebnis != null) this.speichereMessungInDb(messId, ergebnis);
+        if (ergebnis != null) this.dbModel.speichereMessungInDb(messreihenId, ergebnis);
         return ergebnis;
     }
 

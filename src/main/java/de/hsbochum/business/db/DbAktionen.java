@@ -6,11 +6,14 @@ import de.hsbochum.business.Messung;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class DbAktionen {
+    private static Logger logger = Logger.getLogger(DbAktionen.class.getName());
 
-    Statement statement;
-    Connection con;
+    private Statement statement;
+    private Connection con;
 
     public Messung[] leseMessungen(int messreihenId) throws SQLException {
         ResultSet ergebnis;
@@ -29,8 +32,8 @@ public class DbAktionen {
     public void fuegeMessungEin(int messreihenId, Messung messung) throws SQLException {
         String insertMessungStatement = "INSERT INTO messung "
                 + "(laufendeNummer, wert, timeMillis, messreihenId) "
-                + "VALUES(" + messung.getLaufendeNummer() + ", " + messung.getWert() + ", " + messung.getTimeMillis() +", " + messreihenId + ")";
-        System.out.println(insertMessungStatement);
+                + "VALUES(" + messung.getLaufendeNummer() + ", " + messung.getWert() + ", " + messung.getTimeMillis() + ", " + messreihenId + ")";
+        logger.log(Level.INFO, insertMessungStatement);
         this.statement.executeUpdate(insertMessungStatement);
     }
 
@@ -56,7 +59,7 @@ public class DbAktionen {
                 + messreihe.getZeitintervall() + ", '"
                 + messreihe.getVerbraucher() + "', '"
                 + messreihe.getMessgroesse() + "')";
-        System.out.println(insertMessreiheStatement);
+        logger.log(Level.INFO, insertMessreiheStatement);
         this.statement.executeUpdate(insertMessreiheStatement);
     }
 

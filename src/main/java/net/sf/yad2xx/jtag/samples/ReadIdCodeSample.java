@@ -1,8 +1,8 @@
 /*
  * Copyright 2016 Stephen Davies
- * 
+ *
  * This file is part of yad2xx.
- * 
+ *
  * yad2xx is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -18,12 +18,12 @@
  */
 package net.sf.yad2xx.jtag.samples;
 
-import java.io.PrintStream;
-
 import net.sf.yad2xx.Device;
 import net.sf.yad2xx.FTDIInterface;
 import net.sf.yad2xx.jtag.Jtag;
 import net.sf.yad2xx.samples.AbstractSample;
+
+import java.io.PrintStream;
 
 /**
  * Sample program that uses JTAG to read the IDCODE and USERCODE
@@ -55,66 +55,64 @@ public class ReadIdCodeSample extends AbstractSample {
 //	"SAMPLE ( 00000001)," &
 //	"USERCODE ( 11111101)"; 
 
-	public static final int OPCODE_LENGTH = 8;
-	public static final int IDREG_LENGTH = 32;
-	
-	public static final int OPCODE_BYPASS = 0xFF;
-	public static final int OPCODE_IDCODE = 0xFE;
-	public static final int OPCODE_USERCODE = 0xFD;
-	
-	public static void main(String[] args) {
-		ReadIdCodeSample sample = new ReadIdCodeSample();
-		
-		try {
-			if (sample.processOptions(args)) {
-				sample.run();
-			} else {
-				sample.displayUsage();
-			}
-		}
-		catch (Exception e) {
-			System.err.println(e.getMessage());
-			sample.displayUsage();
-		}
-	}
-	
-	private void displayUsage() {
-		displayUsage("net.sf.yad2xx.jtag.samples.ReadIdCodeSample [-h] [-p hex]");
-	}
-	
-	private void run() {
-		PrintStream out = System.out;
-		
-		try {
-			
-			out.println("Jtag Id Code Example");
-			out.println("--------------------");
-			printProlog(out);
-			
-			Device[] devices = FTDIInterface.getDevices();
-			
-			if (devices.length == 0) {
-				out.println("*** No FTDI devices found. Possible VID/PID or driver problem. ***");
-				return;
-			}
-			
-			Device device = devices[0];
-			Jtag jtag = new Jtag(device);
-			jtag.open();
-			
-			jtag.scanIR(OPCODE_LENGTH, new byte[] { (byte) OPCODE_IDCODE });
-			byte[] data = jtag.scanDR(IDREG_LENGTH);
-			// output data
-			
-			//jtag.scanIR(OPCODE_LENGTH, new byte[] { (byte) OPCODE_USERCODE });
-			//data = jtag.scanDR(IDREG_LENGTH);
-			// output data
-			
-			jtag.close();
-		}
-		catch (Exception e) {
-			e.printStackTrace(System.err);
-		}
-	}
+    public static final int OPCODE_LENGTH = 8;
+    public static final int IDREG_LENGTH = 32;
+
+    public static final int OPCODE_BYPASS = 0xFF;
+    public static final int OPCODE_IDCODE = 0xFE;
+    public static final int OPCODE_USERCODE = 0xFD;
+
+    public static void main(String[] args) {
+        ReadIdCodeSample sample = new ReadIdCodeSample();
+
+        try {
+            if (sample.processOptions(args)) {
+                sample.run();
+            } else {
+                sample.displayUsage();
+            }
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            sample.displayUsage();
+        }
+    }
+
+    private void displayUsage() {
+        displayUsage("net.sf.yad2xx.jtag.samples.ReadIdCodeSample [-h] [-p hex]");
+    }
+
+    private void run() {
+        PrintStream out = System.out;
+
+        try {
+
+            out.println("Jtag Id Code Example");
+            out.println("--------------------");
+            printProlog(out);
+
+            Device[] devices = FTDIInterface.getDevices();
+
+            if (devices.length == 0) {
+                out.println("*** No FTDI devices found. Possible VID/PID or driver problem. ***");
+                return;
+            }
+
+            Device device = devices[0];
+            Jtag jtag = new Jtag(device);
+            jtag.open();
+
+            jtag.scanIR(OPCODE_LENGTH, new byte[]{(byte) OPCODE_IDCODE});
+            byte[] data = jtag.scanDR(IDREG_LENGTH);
+            // output data
+
+            //jtag.scanIR(OPCODE_LENGTH, new byte[] { (byte) OPCODE_USERCODE });
+            //data = jtag.scanDR(IDREG_LENGTH);
+            // output data
+
+            jtag.close();
+        } catch (Exception e) {
+            e.printStackTrace(System.err);
+        }
+    }
 
 }

@@ -1,8 +1,8 @@
 /*
  * Copyright 2012-2018 Stephen Davies
- * 
+ *
  * This file is part of yad2xx.
- * 
+ *
  * yad2xx is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -55,8 +55,8 @@
  * }
  * </pre>
  *
- * @author		Stephen Davies
- * @since		20 May 2012
- * @since		0.1
+ * @author Stephen Davies
+ * @since 20 May 2012
+ * @since 0.1
  */
 package net.sf.yad2xx;

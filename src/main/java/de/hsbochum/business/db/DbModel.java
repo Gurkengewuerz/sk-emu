@@ -2,16 +2,20 @@ package de.hsbochum.business.db;
 
 import de.hsbochum.business.Messreihe;
 import de.hsbochum.business.Messung;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
 import java.sql.SQLException;
+import java.util.Collections;
+import java.util.logging.Logger;
 
 public final class DbModel {
 
+    private static Logger logger = Logger.getLogger(DbModel.class.getName());
+
     private static DbModel basisModel;
-    private DbAktionen dbAktionen = new DbAktionen();
-    // wird zukuenftig noch instanziiert
-    private ObservableList<Messreihe> messreihen = null;
+    private final DbAktionen dbAktionen = new DbAktionen();
+    private final ObservableList<Messreihe> messreihen = FXCollections.observableArrayList();
 
     private DbModel() {
     }
@@ -39,27 +43,33 @@ public final class DbModel {
         this.dbAktionen.closeDb();
     }
 
-    public void leseMessreihenInklusiveMessungenAusDb()
-            throws ClassNotFoundException, SQLException {
+    public void leseMessreihenInklusiveMessungenAusDb() throws ClassNotFoundException, SQLException {
         this.dbAktionen.connectDb();
-        Messreihe[] messreihenAusDb
-                = this.dbAktionen.leseMessreihenInklusiveMessungen();
+        Messreihe[] messreihenAusDb = this.dbAktionen.leseMessreihenInklusiveMessungen();
         this.dbAktionen.closeDb();
         int anzahl = this.messreihen.size();
         for (int i = 0; i < anzahl; i++) {
             this.messreihen.remove(0);
         }
-        for (int i = 0; i < messreihenAusDb.length; i++) {
-            this.messreihen.add(messreihenAusDb[i]);
-        }
+        Collections.addAll(this.messreihen, messreihenAusDb);
     }
 
-    public void speichereMessreiheInDb(Messreihe messreihe)
-            throws ClassNotFoundException, SQLException {
+    public void speichereMessreiheInDb(Messreihe messreihe) throws ClassNotFoundException, SQLException {
         this.dbAktionen.connectDb();
         this.dbAktionen.fuegeMessreiheEin(messreihe);
         this.dbAktionen.closeDb();
         this.messreihen.add(messreihe);
     }
 
+    public int anzahlMessungenZuMessreihe(int messreihenId) throws SQLException, ClassNotFoundException {
+        this.dbAktionen.connectDb();
+        Messung[] messungen = this.dbAktionen.leseMessungen(messreihenId);
+        this.dbAktionen.closeDb();
+        int anzahlMessungen = messungen.length;
+        return anzahlMessungen;
+    }
+
+    public ObservableList<Messreihe> getMessreihen() {
+        return messreihen;
+    }
 }

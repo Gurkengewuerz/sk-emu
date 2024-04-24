@@ -6,6 +6,7 @@ import net.sf.yad2xx.FTDIInterface;
 
 public class EmuCheckConnection extends Thread {
 
+    private final Device[] devices;
     // Es gibt eine Klasse Device. Das Attribut device vom Typ
     // Device soll Eigenschaften und Methoden zu dem
     // angeschlossenen Leistungsmessgeraet enthalten.
@@ -13,8 +14,6 @@ public class EmuCheckConnection extends Thread {
     private Device device = null;
     // Attribut zur Regelung des Threads, siehe unten
     private boolean connected = false;
-    private Device[] devices;
-
     private String ergebnis = "";
     private boolean ergSchreiben = false;
 
@@ -93,7 +92,7 @@ public class EmuCheckConnection extends Thread {
 
     public void sendRequest(MESSWERT m) throws FTDIException {
         device.write(m.getRequest());
-        System.out.println("Request " + m.getObis() + " " + m.toString());
+        System.out.println("Request " + m.getObis() + " " + m);
         ergSchreiben = true;
     }
 

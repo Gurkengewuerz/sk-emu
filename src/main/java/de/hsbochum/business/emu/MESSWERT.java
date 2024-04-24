@@ -24,10 +24,11 @@ public enum MESSWERT {
     Strom("11.7", new byte[]{1, 82, 49, 2, 49, 49, 46, 55, 40, 41, 3}, "Strom"),
     Spannung("12.7", new byte[]{1, 82, 49, 2, 49, 50, 46, 55, 40, 41, 3}, "Spannung");
 
-    private byte[] request;
-    private String obis, einheit;
+    private final byte[] request;
+    private final String obis;
+    private final String einheit;
 
-    private MESSWERT(String obis, byte[] request, String einheit) {
+    MESSWERT(String obis, byte[] request, String einheit) {
         this.obis = obis;
         this.request = request;
         this.einheit = einheit;
