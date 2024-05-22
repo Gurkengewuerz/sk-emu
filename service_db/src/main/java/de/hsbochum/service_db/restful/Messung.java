@@ -6,6 +6,9 @@ public class Messung {
     private double wert;
     private long timeMillis;
 
+    public Messung() {
+    }
+
     public Messung(int laufendeNummer, double wert, long timeMillis) {
         super();
         this.laufendeNummer = laufendeNummer;

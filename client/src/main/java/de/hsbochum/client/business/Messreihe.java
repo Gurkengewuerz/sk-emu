@@ -19,6 +19,7 @@ public class Messreihe {
         this.zeitintervall = zeitintervall;
         this.verbraucher = verbraucher;
         this.messgroesse = messgroesse;
+        this.messungen = new Messung[0];
     }
 
     public int getMessreihenId() {
@@ -66,6 +67,7 @@ public class Messreihe {
     }
 
     public String getMessungenString() {
+        if (this.messungen == null) return "";
         String[] stringArray = new String[this.messungen.length];
         for (int i = 0; i < this.messungen.length; i++) {
             stringArray[i] = this.messungen[i].gibAttributeAus();

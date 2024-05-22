@@ -10,6 +10,8 @@ public class Messreihe {
     private Messung[] messungen;
     private String messungenString;
 
+    public Messreihe() {
+    }
 
     public Messreihe(int messreihenId, int zeitintervall, String verbraucher, String messgroesse) {
         super();
