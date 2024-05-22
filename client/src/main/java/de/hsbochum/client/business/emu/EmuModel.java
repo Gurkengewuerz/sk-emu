@@ -1,19 +1,11 @@
 package de.hsbochum.client.business.emu;
 
 import de.hsbochum.client.business.Constants;
-import de.hsbochum.client.business.Messreihe;
 import de.hsbochum.client.business.Messung;
-import de.hsbochum.client.business.db.DbModel;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
-import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 
-import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 

@@ -1,6 +1,8 @@
 package de.hsbochum.service_db.restful;
 
 import java.sql.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -17,6 +19,9 @@ import jakarta.ws.rs.core.Response;
 
 @Path("/api")
 public class ServiceDb {
+
+    private static final Logger logger = Logger.getLogger(ServiceDb.class.getName());
+
     private final DbAktionen dbAktionen;
     private final ObjectMapper objectMapper;
 
@@ -35,7 +40,7 @@ public class ServiceDb {
     @Path("/messreihen")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public String getMessreihen() throws ClassNotFoundException, SQLException, JsonProcessingException {
+    public String getMessreihen() throws SQLException, JsonProcessingException {
         String messreihenJSON = "";
         this.dbAktionen.connectDb();
         Messreihe[] messreihe = this.dbAktionen.leseMessreihenInklusiveMessungen();
@@ -48,7 +53,7 @@ public class ServiceDb {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/messreihe/{MessreihenId}/messungen")
-    public String getMessungen(@PathParam("MessreihenId") String MessreihenId) throws ClassNotFoundException, SQLException, JsonProcessingException {
+    public String getMessungen(@PathParam("MessreihenId") String MessreihenId) throws SQLException, JsonProcessingException {
         String messungenJSON = "";
         this.dbAktionen.connectDb();
         int MessreihenIdInteger = Integer.parseInt(MessreihenId);
@@ -62,12 +67,12 @@ public class ServiceDb {
     @Path("/messreihe/{MessreihenId}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.TEXT_PLAIN)
-    public Response createMessreihe(Messreihe messreihe, @PathParam("MessreihenId") String MessreihenId) throws ClassNotFoundException, SQLException {
+    public Response createMessreihe(Messreihe messreihe, @PathParam("MessreihenId") String MessreihenId) throws SQLException {
         this.dbAktionen.connectDb();
         try {
             this.dbAktionen.fuegeMessreiheEin(messreihe);
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Fehler beim Erstellen einer Messreihe in createMessreihe()", e);
             return Response.status(Response.Status.CONFLICT).build();
         }
         this.dbAktionen.closeDb();
@@ -80,13 +85,13 @@ public class ServiceDb {
     @Path("/messung/{MessreihenId}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.TEXT_PLAIN)
-    public Response createMessung(Messung messung, @PathParam("MessreihenId") String MessreihenId) throws ClassNotFoundException, SQLException {
+    public Response createMessung(Messung messung, @PathParam("MessreihenId") String MessreihenId) throws SQLException {
         int messreihenIdInteger = Integer.parseInt(MessreihenId);
         this.dbAktionen.connectDb();
         try {
             this.dbAktionen.fuegeMessungEin(messreihenIdInteger, messung);
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Fehler beim Erstellen einer Messung in createMessung()", e);
             return Response.status(Response.Status.CONFLICT).build();
         }
         this.dbAktionen.closeDb();

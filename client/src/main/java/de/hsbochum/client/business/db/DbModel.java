@@ -37,10 +37,11 @@ public final class DbModel {
 
     public void speichereMessungInDb(int messreihenId, Messung messung) throws SQLException {
         logger.log(Level.INFO, "speichereMessungInDb({0}, ...)", messreihenId);
-        Response response = client.target(Constants.REST_URI + Constants.REST_URI_DB + "/messung").path(String.valueOf(messreihenId)).request(MediaType.TEXT_PLAIN).post(Entity.entity(messung, MediaType.APPLICATION_JSON));
-        if (response.getStatus() != 201) {
-            System.err.println("Fehler: clientResponse.STATUS " + response.getStatus());
-            throw new SQLException("Fehler beim Eintragen in die Datenbank!"); // Ausstieg bei Fehler!
+        try (Response response = client.target(Constants.REST_URI + Constants.REST_URI_DB + "/messung").path(String.valueOf(messreihenId)).request(MediaType.TEXT_PLAIN).post(Entity.entity(messung, MediaType.APPLICATION_JSON))) {
+            if (response.getStatus() != 201) {
+                logger.log(Level.SEVERE, "Fehler in speichereMessungInDb(): response.getStatus != 201 / = {0}", response.getStatus());
+                throw new SQLException("Fehler beim Eintragen in die Datenbank!"); // Ausstieg bei Fehler!
+            }
         }
     }
 
@@ -54,11 +55,11 @@ public final class DbModel {
 
     public void speichereMessreiheInDb(Messreihe messreihe) throws SQLException {
         logger.log(Level.INFO, "speichereMessreiheInDb(...)");
-        Response response = client.target(Constants.REST_URI + Constants.REST_URI_DB + "/messreihe").path(String.valueOf(messreihe.getMessreihenId())).request(MediaType.TEXT_PLAIN).post(Entity.entity(messreihe, MediaType.APPLICATION_JSON));
-
-        if (response.getStatus() != 201) {
-            System.err.println("Fehler: clientResponse.STATUS " + response.getStatus());
-            throw new SQLException("Fehler beim Eintragen in die Datenbank!");
+        try (Response response = client.target(Constants.REST_URI + Constants.REST_URI_DB + "/messreihe").path(String.valueOf(messreihe.getMessreihenId())).request(MediaType.TEXT_PLAIN).post(Entity.entity(messreihe, MediaType.APPLICATION_JSON))) {
+            if (response.getStatus() != 201) {
+                logger.log(Level.SEVERE, "Fehler in speichereMessreiheInDb(): response.getStatus != 201 / = {0}", response.getStatus());
+                throw new SQLException("Fehler beim Eintragen in die Datenbank!");
+            }
         }
     }
 
