@@ -37,7 +37,7 @@ public final class DbModel {
 
     public void speichereMessungInDb(int messreihenId, Messung messung) throws SQLException {
         logger.log(Level.INFO, "speichereMessungInDb({0}, ...)", messreihenId);
-        try (Response response = client.target(Constants.REST_URI + Constants.REST_URI_DB + "/messung").path(String.valueOf(messreihenId)).request(MediaType.TEXT_PLAIN).post(Entity.entity(messung, MediaType.APPLICATION_JSON))) {
+        try (final Response response = client.target(Constants.REST_URI + Constants.REST_URI_DB + "/messung").path(String.valueOf(messreihenId)).request(MediaType.TEXT_PLAIN).post(Entity.entity(messung, MediaType.APPLICATION_JSON))) {
             if (response.getStatus() != 201) {
                 logger.log(Level.SEVERE, "Fehler in speichereMessungInDb(): response.getStatus != 201 / = {0}", response.getStatus());
                 throw new SQLException("Fehler beim Eintragen in die Datenbank!"); // Ausstieg bei Fehler!
@@ -48,14 +48,14 @@ public final class DbModel {
     public void leseMessreihenInklusiveMessungenAusDb() throws SQLException {
         logger.log(Level.INFO, "leseMessreihenInklusiveMessungenAusDb()");
         this.messreihen.clear();
-        Messreihe[] messreihen = client.target(Constants.REST_URI + Constants.REST_URI_DB + "/messreihen").request(MediaType.APPLICATION_JSON).get(Messreihe[].class);
+        final Messreihe[] messreihen = client.target(Constants.REST_URI + Constants.REST_URI_DB + "/messreihen").request(MediaType.APPLICATION_JSON).get(Messreihe[].class);
         // Neue Messreihenliste aufbauen
         this.messreihen.addAll(Arrays.asList(messreihen));
     }
 
     public void speichereMessreiheInDb(Messreihe messreihe) throws SQLException {
         logger.log(Level.INFO, "speichereMessreiheInDb(...)");
-        try (Response response = client.target(Constants.REST_URI + Constants.REST_URI_DB + "/messreihe").path(String.valueOf(messreihe.getMessreihenId())).request(MediaType.TEXT_PLAIN).post(Entity.entity(messreihe, MediaType.APPLICATION_JSON))) {
+        try (final Response response = client.target(Constants.REST_URI + Constants.REST_URI_DB + "/messreihe").path(String.valueOf(messreihe.getMessreihenId())).request(MediaType.TEXT_PLAIN).post(Entity.entity(messreihe, MediaType.APPLICATION_JSON))) {
             if (response.getStatus() != 201) {
                 logger.log(Level.SEVERE, "Fehler in speichereMessreiheInDb(): response.getStatus != 201 / = {0}", response.getStatus());
                 throw new SQLException("Fehler beim Eintragen in die Datenbank!");
@@ -65,7 +65,7 @@ public final class DbModel {
 
     public int anzahlMessungenZuMessreihe(int messreihenId) throws SQLException {
         logger.log(Level.INFO, "anzahlMessungenZuMessreihe({0})", messreihenId);
-        Messung[] messungen = client.target(Constants.REST_URI + Constants.REST_URI_DB + "/messreihe").path(String.valueOf(messreihenId)).path("messungen").request(MediaType.APPLICATION_JSON).get(Messung[].class);
+        final Messung[] messungen = client.target(Constants.REST_URI + Constants.REST_URI_DB + "/messreihe").path(String.valueOf(messreihenId)).path("messungen").request(MediaType.APPLICATION_JSON).get(Messung[].class);
         return messungen.length;
     }
 
