@@ -69,6 +69,20 @@ public final class DbModel {
         return messungen.length;
     }
 
+    public void loescheMessreiheInklusiveMessungenAusDb(Messreihe messreihe) throws SQLException {
+        logger.log(Level.INFO, "loescheMessreiheInklusiveMessungenAusDb(...)");
+        try (final Response response = client.target(Constants.REST_URI + Constants.REST_URI_DB + "/messreihe").path(String.valueOf(messreihe.getMessreihenId())).request(MediaType.TEXT_PLAIN).delete()) {
+            if (response.getStatus() != 200) {
+                logger.log(Level.SEVERE, "Fehler in loescheMessreiheInklusiveMessungenAusDb(): response.getStatus != 200 / = {0}", response.getStatus());
+                throw new SQLException("Fehler beim Löschen aus der Datenbank!");
+            }
+        }
+    }
+
+    public void loescheMessreiheInklusiveMessungenAusDb(int messreiheID) throws SQLException {
+        loescheMessreiheInklusiveMessungenAusDb(new Messreihe(messreiheID, 0, "Dummy", "Dummy"));
+    }
+
     public ObservableList<Messreihe> getMessreihen() {
         return messreihen;
     }

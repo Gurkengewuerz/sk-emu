@@ -29,6 +29,17 @@ public class DbAktionen {
         return messungen.toArray(new Messung[0]);
     }
 
+    public Messreihe leseMessreihe(int messreihenId) throws SQLException {
+        ResultSet ergebnis;
+        ergebnis = this.statement.executeQuery("SELECT * FROM messreihe WHERE messreihenId = " + messreihenId);
+        Messreihe res = new Messreihe();
+        while (ergebnis.next()) {
+            res = new Messreihe(ergebnis.getInt(1), ergebnis.getInt(2), ergebnis.getString(3), ergebnis.getString(4));
+        }
+        ergebnis.close();
+        return res;
+    }
+
     public void fuegeMessungEin(int messreihenId, Messung messung) throws SQLException {
         String insertMessungStatement = "INSERT INTO messung "
                 + "(laufendeNummer, wert, timeMillis, messreihenId) "
@@ -63,6 +74,12 @@ public class DbAktionen {
         this.statement.executeUpdate(insertMessreiheStatement);
     }
 
+    public void loescheMessreiheInklusiveMessungen(int messreihenId) throws SQLException {
+        String deleteMessungenStatement = "DELETE FROM messung WHERE messreihenId = " + messreihenId;
+        this.statement.executeUpdate(deleteMessungenStatement);
+        String deleteMessreiheStatement = "DELETE FROM messreihe WHERE messreihenId = " + messreihenId;
+        this.statement.executeUpdate(deleteMessreiheStatement);
+    }
 
     public void connectDb() throws SQLException {
         DriverManager.registerDriver(new org.mariadb.jdbc.Driver());

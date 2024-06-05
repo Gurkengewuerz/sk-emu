@@ -8,12 +8,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.hsbochum.service_db.restful.db.DbAktionen;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
@@ -89,6 +84,19 @@ public class ServiceDb {
         int messreihenIdInteger = Integer.parseInt(MessreihenId);
         this.dbAktionen.connectDb();
         try {
+            Messreihe messreihe = dbAktionen.leseMessreihe(messreihenIdInteger);
+            // Laden der existierenden Messungen zur Überprüfung des Zeitintervalls
+            Messung[] vorhandeneMessungen = this.dbAktionen.leseMessungen(messreihenIdInteger);
+
+            // Überprüfen des Zeitintervalls
+            for (Messung vorhandeneMessung : vorhandeneMessungen) {
+                if (messung.getTimeMillis() - vorhandeneMessung.getTimeMillis() < messreihe.getZeitintervall()) {
+                    logger.log(Level.SEVERE, "Zeitintervall zwischen den Messungen zu kurz");
+                    return Response.status(Response.Status.CONFLICT).build();
+                }
+            }
+
+            // Speichern der neuen Messung
             this.dbAktionen.fuegeMessungEin(messreihenIdInteger, messung);
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "Fehler beim Erstellen einer Messung in createMessung()", e);
@@ -99,4 +107,21 @@ public class ServiceDb {
         return Response.status(Response.Status.CREATED).entity(artikelEndpoint).build();
     }
 
+    @DELETE
+    @Path("/messreihe/{MessreihenId}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response loescheMessreiheInklusiveMessungen(@PathParam("MessreihenId") String MessreihenId) throws SQLException {
+        int messreihenIdInteger = Integer.parseInt(MessreihenId);
+        this.dbAktionen.connectDb();
+        try {
+            this.dbAktionen.loescheMessreiheInklusiveMessungen(messreihenIdInteger);
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Fehler beim Löschen einer Messreihe in loescheMessreiheInklusiveMessungen()", e);
+            return Response.status(Response.Status.CONFLICT).build();
+        }
+        this.dbAktionen.closeDb();
+        String artikelEndpoint = "/api/db/messreihe/" + messreihenIdInteger;
+        return Response.status(Response.Status.OK).entity(artikelEndpoint).build();
+    }
 }
