@@ -14,12 +14,20 @@ public class Messreihe {
     }
 
     public Messreihe(int messreihenId, int zeitintervall, String verbraucher, String messgroesse) {
-        super();
         this.messreihenId = messreihenId;
         this.zeitintervall = zeitintervall;
         this.verbraucher = verbraucher;
         this.messgroesse = messgroesse;
         this.messungen = new Messung[0];
+    }
+
+    public Messreihe(int messreihenId, int zeitintervall) throws IllegalArgumentException {
+        this.messreihenId = messreihenId;
+        if (zeitintervall >= 15 && zeitintervall <= 3600) this.zeitintervall = zeitintervall;
+        else if (zeitintervall < 15)
+            throw new IllegalArgumentException("Das Zeitintervall muss mindestens 15 Sekunden lang sein.");
+        else
+            throw new IllegalArgumentException("Das Zeitintervall darf hoechstens 3600 Sekunden lang sein.");
     }
 
     public int getMessreihenId() {

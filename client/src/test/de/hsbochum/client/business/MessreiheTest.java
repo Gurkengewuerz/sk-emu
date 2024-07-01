@@ -7,6 +7,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import java.util.stream.Stream;
 
 public class MessreiheTest {
@@ -49,5 +51,57 @@ public class MessreiheTest {
         // Assert
         String expected = "1: 50.0 / 2: 75.0";
         assertEquals(expected, result);
+    }
+
+    @Test
+    public void testMessreiheConstructorWithValidInput() {
+        // Vorgaben für den Test
+        int expectedMessreihenId = 1;
+        int expectedZeitintervall = 20;
+
+        // Erstellen des Messreihe-Objekts mit dem dritten Konstruktor
+        Messreihe messreihe = new Messreihe(expectedMessreihenId, expectedZeitintervall);
+
+        // Überprüfen der Attribute
+        assertEquals(expectedMessreihenId, messreihe.getMessreihenId());
+        assertEquals(expectedZeitintervall, messreihe.getZeitintervall());
+    }
+
+    @Test
+    public void testMessreiheConstructorWithMinValidZeitintervall() {
+        int expectedMessreihenId = 2;
+        int expectedZeitintervall = 15;
+
+        Messreihe messreihe = new Messreihe(expectedMessreihenId, expectedZeitintervall);
+
+        assertEquals(expectedMessreihenId, messreihe.getMessreihenId());
+        assertEquals(expectedZeitintervall, messreihe.getZeitintervall());
+    }
+
+    @Test
+    public void testMessreiheConstructorWithMaxValidZeitintervall() {
+        int expectedMessreihenId = 3;
+        int expectedZeitintervall = 3600;
+
+        Messreihe messreihe = new Messreihe(expectedMessreihenId, expectedZeitintervall);
+
+        assertEquals(expectedMessreihenId, messreihe.getMessreihenId());
+        assertEquals(expectedZeitintervall, messreihe.getZeitintervall());
+    }
+
+    @Test
+    public void testMessreiheConstructorWithInvalidZeitintervallBelowMin() {
+        int expectedMessreihenId = 4;
+        int invalidZeitintervall = 10;
+
+        assertThrows(IllegalArgumentException.class, () -> new Messreihe(expectedMessreihenId, invalidZeitintervall));
+    }
+
+    @Test
+    public void testMessreiheConstructorWithInvalidZeitintervallAboveMax() {
+        int expectedMessreihenId = 5;
+        int invalidZeitintervall = 4000;
+
+        assertThrows(IllegalArgumentException.class, () -> new Messreihe(expectedMessreihenId, invalidZeitintervall));
     }
 }
